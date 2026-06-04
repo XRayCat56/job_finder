@@ -1,4 +1,9 @@
-import { useState, type FormEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   createPreviousJob,
   deletePreviousJob,
@@ -6,6 +11,7 @@ import {
 } from "../../api/profile";
 import type { PreviousJob, PreviousJobInput } from "../../types/profile";
 import { FormSection } from "../form-section/form-section";
+import type { ProfileSectionHandle } from "./profile-section-handle";
 import "../../styles/forms.css";
 
 interface PreviousJobsSectionProps {
@@ -47,37 +53,57 @@ function toInput(job: PreviousJob): PreviousJobInput {
   };
 }
 
-export function PreviousJobsSection({
-  entries,
-  hasUser,
-  onChanged,
-}: PreviousJobsSectionProps) {
+function hasPreviousJobDraft(
+  draft: PreviousJobInput,
+  editingId: number | null,
+): boolean {
+  return (
+    editingId !== null ||
+    draft.companyName.trim() !== "" ||
+    draft.jobTitle.trim() !== ""
+  );
+}
+
+export const PreviousJobsSection = forwardRef<
+  ProfileSectionHandle,
+  PreviousJobsSectionProps
+>(function PreviousJobsSection({ entries, hasUser, onChanged }, ref) {
   const [draft, setDraft] = useState<PreviousJobInput>(EMPTY);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  async function persistDraft(): Promise<void> {
     if (!hasUser) {
-      setError("Save your profile information first.");
+      throw new Error("Save your profile information first.");
+    }
+    if (!hasPreviousJobDraft(draft, editingId)) {
       return;
     }
+    if (editingId) {
+      await updatePreviousJob(editingId, draft);
+      setNotice("Job updated.");
+    } else {
+      await createPreviousJob(draft);
+      setNotice("Job added.");
+    }
+    setDraft(EMPTY);
+    setEditingId(null);
+    await onChanged();
+  }
+
+  useImperativeHandle(ref, () => ({
+    savePending: persistDraft,
+  }));
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
     setSaving(true);
     setNotice(null);
     setError(null);
     try {
-      if (editingId) {
-        await updatePreviousJob(editingId, draft);
-        setNotice("Job updated.");
-      } else {
-        await createPreviousJob(draft);
-        setNotice("Job added.");
-      }
-      setDraft(EMPTY);
-      setEditingId(null);
-      await onChanged();
+      await persistDraft();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -276,4 +302,4 @@ export function PreviousJobsSection({
       </form>
     </FormSection>
   );
-}
+});

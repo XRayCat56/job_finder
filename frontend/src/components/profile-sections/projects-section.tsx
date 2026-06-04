@@ -1,4 +1,10 @@
-import { useRef, useState, type FormEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   createProject,
   deleteProject,
@@ -11,6 +17,7 @@ import type {
   Skill,
 } from "../../types/profile";
 import { FormSection } from "../form-section/form-section";
+import type { ProfileSectionHandle } from "./profile-section-handle";
 import "../../styles/forms.css";
 
 interface ProjectsSectionProps {
@@ -37,13 +44,28 @@ function toInput(project: Project): ProjectInput {
   };
 }
 
-export function ProjectsSection({
-  entries,
-  previousJobs,
-  skills,
-  hasUser,
-  onChanged,
-}: ProjectsSectionProps) {
+function hasProjectDraft(
+  draft: ProjectInput,
+  editingId: number | null,
+): boolean {
+  if (editingId !== null) {
+    return true;
+  }
+  return (
+    draft.name.trim() !== "" ||
+    draft.description.trim() !== "" ||
+    draft.jobId !== "" ||
+    draft.skillIds.length > 0
+  );
+}
+
+export const ProjectsSection = forwardRef<
+  ProfileSectionHandle,
+  ProjectsSectionProps
+>(function ProjectsSection(
+  { entries, previousJobs, skills, hasUser, onChanged },
+  ref,
+) {
   const [draft, setDraft] = useState<ProjectInput>(EMPTY);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -63,30 +85,40 @@ export function ProjectsSection({
     });
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  async function persistDraft(focusAfterAdd = false): Promise<void> {
     if (!hasUser) {
-      setError("Save your profile information first.");
+      throw new Error("Save your profile information first.");
+    }
+    if (!hasProjectDraft(draft, editingId)) {
       return;
     }
+    const isAdding = editingId === null;
+    if (editingId) {
+      await updateProject(editingId, draft);
+      setNotice("Project updated.");
+    } else {
+      await createProject(draft);
+      setNotice("Project added.");
+    }
+    setDraft(EMPTY);
+    setEditingId(null);
+    await onChanged();
+    if (isAdding && focusAfterAdd) {
+      projectNameInputRef.current?.focus();
+    }
+  }
+
+  useImperativeHandle(ref, () => ({
+    savePending: () => persistDraft(false),
+  }));
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
     setSaving(true);
     setNotice(null);
     setError(null);
-    const isAdding = editingId === null;
     try {
-      if (editingId) {
-        await updateProject(editingId, draft);
-        setNotice("Project updated.");
-      } else {
-        await createProject(draft);
-        setNotice("Project added.");
-      }
-      setDraft(EMPTY);
-      setEditingId(null);
-      await onChanged();
-      if (isAdding) {
-        projectNameInputRef.current?.focus();
-      }
+      await persistDraft(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -251,4 +283,4 @@ export function ProjectsSection({
       </form>
     </FormSection>
   );
-}
+});

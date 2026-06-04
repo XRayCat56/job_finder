@@ -1,4 +1,9 @@
-import { useState, type FormEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   createEducation,
   deleteEducation,
@@ -6,6 +11,7 @@ import {
 } from "../../api/profile";
 import type { Education, EducationInput } from "../../types/profile";
 import { FormSection } from "../form-section/form-section";
+import type { ProfileSectionHandle } from "./profile-section-handle";
 import "../../styles/forms.css";
 
 interface EducationSectionProps {
@@ -30,37 +36,61 @@ function toInput(entry: Education): EducationInput {
   };
 }
 
-export function EducationSection({
-  entries,
-  hasUser,
-  onChanged,
-}: EducationSectionProps) {
+function hasEducationDraft(
+  draft: EducationInput,
+  editingId: number | null,
+): boolean {
+  if (editingId !== null) {
+    return true;
+  }
+  return (
+    draft.school.trim() !== "" ||
+    draft.degreeType.trim() !== "" ||
+    draft.areaOfStudy.trim() !== "" ||
+    draft.gpa.trim() !== ""
+  );
+}
+
+export const EducationSection = forwardRef<
+  ProfileSectionHandle,
+  EducationSectionProps
+>(function EducationSection({ entries, hasUser, onChanged }, ref) {
   const [draft, setDraft] = useState<EducationInput>(EMPTY);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  async function persistDraft(): Promise<void> {
     if (!hasUser) {
-      setError("Save your profile information first.");
+      throw new Error("Save your profile information first.");
+    }
+    if (!hasEducationDraft(draft, editingId)) {
       return;
     }
+    if (editingId) {
+      await updateEducation(editingId, draft);
+      setNotice("Education entry updated.");
+    } else {
+      await createEducation(draft);
+      setNotice("Education entry added.");
+    }
+    setDraft(EMPTY);
+    setEditingId(null);
+    await onChanged();
+  }
+
+  useImperativeHandle(ref, () => ({
+    savePending: persistDraft,
+  }));
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
     setSaving(true);
     setNotice(null);
     setError(null);
     try {
-      if (editingId) {
-        await updateEducation(editingId, draft);
-        setNotice("Education entry updated.");
-      } else {
-        await createEducation(draft);
-        setNotice("Education entry added.");
-      }
-      setDraft(EMPTY);
-      setEditingId(null);
-      await onChanged();
+      await persistDraft();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -220,4 +250,4 @@ export function EducationSection({
       </form>
     </FormSection>
   );
-}
+});

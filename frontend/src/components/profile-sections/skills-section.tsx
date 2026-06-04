@@ -1,4 +1,10 @@
-import { useRef, useState, type FormEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { createSkill, deleteSkill, updateSkill } from "../../api/profile";
 import {
   PROFICIENCY_LEVELS,
@@ -6,6 +12,7 @@ import {
   type SkillInput,
 } from "../../types/profile";
 import { FormSection } from "../form-section/form-section";
+import type { ProfileSectionHandle } from "./profile-section-handle";
 import "../../styles/forms.css";
 
 interface SkillsSectionProps {
@@ -19,11 +26,12 @@ const EMPTY: SkillInput = {
   proficiencyLevel: PROFICIENCY_LEVELS[0],
 };
 
-export function SkillsSection({
-  entries,
-  hasUser,
-  onChanged,
-}: SkillsSectionProps) {
+function hasSkillDraft(draft: SkillInput, editingId: number | null): boolean {
+  return editingId !== null || draft.skillName.trim() !== "";
+}
+
+export const SkillsSection = forwardRef<ProfileSectionHandle, SkillsSectionProps>(
+  function SkillsSection({ entries, hasUser, onChanged }, ref) {
   const [draft, setDraft] = useState<SkillInput>(EMPTY);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -31,31 +39,43 @@ export function SkillsSection({
   const [saving, setSaving] = useState(false);
   const skillNameRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  async function persistDraft(focusAfterAdd = false): Promise<void> {
     if (!hasUser) {
-      setError("Save your profile information first.");
+      throw new Error("Save your profile information first.");
+    }
+    if (!hasSkillDraft(draft, editingId)) {
       return;
     }
-    setSaving(true);
-    setNotice(null);
-    setError(null);
-    try {
-      if (editingId) {
-        await updateSkill(editingId, draft);
-        setNotice("Skill updated.");
-      } else {
-        await createSkill(draft);
-        setNotice("Skill added.");
+    if (editingId) {
+      await updateSkill(editingId, draft);
+      setNotice("Skill updated.");
+    } else {
+      await createSkill(draft);
+      setNotice("Skill added.");
+      if (focusAfterAdd) {
         setDraft(EMPTY);
         setEditingId(null);
         await onChanged();
         skillNameRef.current?.focus();
         return;
       }
-      setDraft(EMPTY);
-      setEditingId(null);
-      await onChanged();
+    }
+    setDraft(EMPTY);
+    setEditingId(null);
+    await onChanged();
+  }
+
+  useImperativeHandle(ref, () => ({
+    savePending: () => persistDraft(false),
+  }));
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    setSaving(true);
+    setNotice(null);
+    setError(null);
+    try {
+      await persistDraft(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -187,4 +207,5 @@ export function SkillsSection({
       </form>
     </FormSection>
   );
-}
+  },
+);

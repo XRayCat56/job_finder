@@ -1,7 +1,13 @@
-import { useState, type FormEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  type FormEvent,
+} from "react";
 import { saveUserInfo } from "../../api/profile";
 import type { UserInfo, UserInfoInput } from "../../types/profile";
 import { FormSection } from "../form-section/form-section";
+import type { ProfileSectionHandle } from "./profile-section-handle";
 import "../../styles/forms.css";
 
 interface UserInfoSectionProps {
@@ -15,7 +21,28 @@ const EMPTY: UserInfoInput = {
   phone: "",
 };
 
-export function UserInfoSection({ initial, onSaved }: UserInfoSectionProps) {
+function isUserFormFilled(form: UserInfoInput): boolean {
+  return form.fullName.trim() !== "" && form.email.trim() !== "";
+}
+
+function isUserFormDirty(
+  form: UserInfoInput,
+  initial: UserInfo | null,
+): boolean {
+  if (!initial) {
+    return isUserFormFilled(form);
+  }
+  return (
+    form.fullName !== initial.fullName ||
+    form.email !== initial.email ||
+    form.phone !== (initial.phone ?? "")
+  );
+}
+
+export const UserInfoSection = forwardRef<
+  ProfileSectionHandle,
+  UserInfoSectionProps
+>(function UserInfoSection({ initial, onSaved }, ref) {
   const [form, setForm] = useState<UserInfoInput>(() =>
     initial
       ? {
@@ -29,15 +56,26 @@ export function UserInfoSection({ initial, onSaved }: UserInfoSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  async function persistUser(): Promise<void> {
+    if (!isUserFormDirty(form, initial) || !isUserFormFilled(form)) {
+      return;
+    }
+    const user = await saveUserInfo(form);
+    onSaved(user);
+    setNotice("Profile information saved.");
+  }
+
+  useImperativeHandle(ref, () => ({
+    savePending: persistUser,
+  }));
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setSaving(true);
     setNotice(null);
     setError(null);
     try {
-      const user = await saveUserInfo(form);
-      onSaved(user);
-      setNotice("Profile information saved.");
+      await persistUser();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -98,4 +136,4 @@ export function UserInfoSection({ initial, onSaved }: UserInfoSectionProps) {
       </form>
     </FormSection>
   );
-}
+});
