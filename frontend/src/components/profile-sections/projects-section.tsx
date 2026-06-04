@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   createProject,
   deleteProject,
@@ -49,6 +49,7 @@ export function ProjectsSection({
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const projectNameInputRef = useRef<HTMLInputElement>(null);
 
   function toggleSkill(skillId: number): void {
     setDraft((prev) => {
@@ -71,6 +72,7 @@ export function ProjectsSection({
     setSaving(true);
     setNotice(null);
     setError(null);
+    const isAdding = editingId === null;
     try {
       if (editingId) {
         await updateProject(editingId, draft);
@@ -82,6 +84,9 @@ export function ProjectsSection({
       setDraft(EMPTY);
       setEditingId(null);
       await onChanged();
+      if (isAdding) {
+        projectNameInputRef.current?.focus();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -160,6 +165,7 @@ export function ProjectsSection({
         <div className="field">
           <label htmlFor="projectName">Project name</label>
           <input
+            ref={projectNameInputRef}
             id="projectName"
             required
             disabled={!hasUser}
