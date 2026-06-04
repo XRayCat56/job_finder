@@ -1,0 +1,48 @@
+.home-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.home-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.home-page__subtitle {
+  color: #888;
+  margin-bottom: 2.5rem;
+}
+
+.home-page__card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: left;
+}
+
+.home-page__card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.home-page__card p {
+  color: #aaa;
+  margin: 0 0 1.5rem;
+}
+
+.home-page__cta {
+  display: inline-block;
+  background: #4ade80;
+  color: #0f0f0f;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+}
+
+.home-page__cta:hover {
+  filter: brightness(1.05);
+}

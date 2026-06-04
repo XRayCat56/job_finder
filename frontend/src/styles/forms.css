@@ -1,0 +1,128 @@
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid--two {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.field label {
+  display: block;
+  font-size: 0.875rem;
+  color: #aaa;
+  margin-bottom: 0.35rem;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #111;
+  color: #e5e5e5;
+  font: inherit;
+}
+
+.field textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid #4ade80;
+  outline-offset: 1px;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #4ade80;
+  color: #0f0f0f;
+}
+
+.btn-secondary {
+  background: #2a2a2a;
+  color: #e5e5e5;
+  border: 1px solid #444;
+}
+
+.btn-danger {
+  background: transparent;
+  color: #f87171;
+  border: 1px solid #7f1d1d;
+}
+
+.entry-card {
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.entry-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.entry-card--skill .entry-card__skill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.entry-card--skill h3 {
+  margin: 0;
+}
+
+.entry-card--skill .entry-card__skill-main .hint {
+  margin-top: 0.25rem;
+}
+
+.entry-card--skill .entry-card__skill-actions {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.skill-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.skill-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.skill-checkbox input {
+  width: auto;
+}
+
+.hint {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 0;
+}
