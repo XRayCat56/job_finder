@@ -1,0 +1,95 @@
+# ============================================================================
+# PROJECT ENVIRONMENT & CORE PRINCIPLES
+# ============================================================================
+- Language: TypeScript (Strict Mode mandated across full stack)
+- Frontend: React (Functional components, Hooks, Modern Ecosystem)
+- Backend: Node.js (REST/GraphQL, Express/Fastify/Nest, Clean Architecture)
+- Core Ethos: Write clean, legible, scalable, and secure code. Favor simplicity over clever code. Follow SOLID and DRY principles.
+
+# ============================================================================
+# GLOBAL TYPESCRIPT RULES (Frontend & Backend)
+# ============================================================================
+- Never use the `any` type. If a type is genuinely dynamic, use `unknown` combined with type guard checks.
+- Prefer `interface` for defining data models and object structures; use `type` for unions, intersections, and primitive aliases.
+- Use explicit return types on all functions, exported handlers, and API endpoints.
+- Avoid TypeScript `enums`. Use a read-only object map or literal union types instead (e.g., `const STATUS = { IDLE: 'idle' } as const` or `type Status = 'idle' | 'loading'`).
+- Use `import type` explicitly when importing only types or interfaces to optimize build steps.
+
+# ============================================================================
+# FRONTEND: REACT CONVENTIONS
+# ============================================================================
+
+# Cursor Rules for React + TypeScript Project
+
+You are an expert frontend engineer specializing in React, TypeScript, Vite, and modern web development standards. Adhere to the following architectural, coding, and styling guidelines in all responses and code generations.
+
+## 1. Core Architecture & Design Patterns
+* **Component Structure:** Prefer functional components with hooks. Use the Container-Presenter pattern or Feature-based grouping for complex UI.
+* **State Management:** Keep state as local as possible. Use React Context only for global configuration/auth. Use tools like TanStack Query (React Query) for server state; do not sync server state into global UI state.
+* **Data Flow:** Enforce strict unidirectional data flow. Pass callbacks down, never mutate props directly.
+
+## 2. TypeScript Guidelines
+* **Strict Typing:** Enforce strict mode. Avoid the use of `any` or `unknown` unless absolutely necessary (and explicitly justified via comment).
+* **Props & Events:** Always explicitly type component props using `interface` or `type`. Use standard React event types (e.g., `React.MouseEvent<HTMLButtonElement>`).
+* **Utility Types:** Utilize built-in utility types (`Pick`, `Omit`, `Partial`, `Readonly`) to keep type definitions DRY.
+* **Discriminated Unions:** Use discriminated unions for complex state states (e.g., loading, success, error statuses).
+
+## 3. React Performance & Best Practices
+* **Hooks Dependency Arrays:** Always include comprehensive dependencies in `useEffect`, `useMemo`, and `useCallback`. Never pass empty arrays to bypass lint errors.
+* **Memoization:** Use `useMemo` and `useCallback` deliberately for expensive calculations or to prevent unnecessary re-renders of children receiving object references.
+* **Key Prop:** Never use array indices as `key` props if the list can be reordered, filtered, or mutated. Use unique stable identifiers.
+* **Code Splitting:** Implement lazy loading (`React.lazy` and `Suspense`) for route-level chunks to keep bundle sizes optimized.
+
+## 4. UI, CSS & Accessibility (a11y)
+* **Styling:** Prefer CSS Modules, Tailwind CSS, or Styled Components (stick to the project's existing styling choice). Avoid inline styles unless managing dynamic, script-calculated values.
+* **Semantic HTML:** Use proper HTML5 landmark elements (`<main>`, `<nav>`, `<article>`, `<header>`, `<footer>`) instead of generic `<div>` nests.
+* **Accessibility:** Ensure interactive elements have accessible names (`aria-label`), explicit `tabIndex` when custom, and are fully keyboard-navigable.
+
+## 5. File Naming Conventions
+* **Components:** Use PascalCase for component files and folders (e.g., `UserProfile.tsx`).
+* **Hooks:** Use camelCase prefixed with "use" (e.g., `useAuth.ts`).
+* **Utilities/Types:** Use camelCase for pure TS utility files and lowercase for type definitions (e.g., `formatDate.ts`, `types.ts`).
+* **Barrel Exports:** Use `index.ts` files sparingly to avoid circular dependencies and clean up clean import interfaces.
+
+## 6. Output & Response Style
+* **Conciseness:** Write clean, self-documenting code with minimal prose. Explain architectural trade-offs briefly if a decision is complex.
+* **Modern JS/TS Only:** Use optional chaining (`?.`), nullish coalescing (`??`), and modern array methods (`.map()`, `.filter()`, `.reduce()`). Do not suggest legacy patterns.
+
+## Component Architecture
+- Use functional components written with the `function` keyword (prefer `function MyComponent()` over `const MyComponent = () =>`).
+- Use named exports exclusively (`export function Component() {}`). Do not use default exports.
+- Define a component's Props interface directly above the component file, naming it `[ComponentName]Props`.
+- Keep components small and focused (under 150 lines). Extract heavy logic into custom hooks.
+- Use lowercase with dashes (kebab-case) for folders and file naming (e.g., `components/user-profile/user-profile.tsx`).
+
+## State & Performance
+- Minimize the use of `useEffect`. Use event handlers or custom hooks to handle side effects natively.
+- Use state initialization functions for heavy initial state computations: `useState(() => computeHeavyData())`.
+- Group related state variables together or abstract complex state structures into `useReducer` or a lightweight store (e.g., Zustand).
+
+# ============================================================================
+# BACKEND: NODE.JS CONVENTIONS
+# ============================================================================
+## Architecture & API
+- Follow a modular, layered architecture: Router -> Controller -> Service -> Data Access Layer (Repository).
+- Keep Controllers strictly responsible for HTTP parsing, payload validation, and returning responses. Business logic belongs entirely in Services.
+- Always use runtime validation libraries (like `Zod` or `Joi`) to parse and sanitize incoming `req.body`, `req.query`, and `req.params` before processing data.
+
+## Asynchronous Code & Security
+- Use `async/await` syntax for all asynchronous behavior. Avoid raw `.then()` chains.
+- Always execute parallel, independent async workflows using `Promise.all()` or `Promise.allSettled()`.
+- Never log sensitive data (passwords, JWTs, credit card numbers, unredacted error stacks).
+
+# ============================================================================
+# ROBUST ERROR HANDLING & EDGE CASES
+# ============================================================================
+- Implement the "Early Return / Guard Clause" pattern. Handle invalid configurations, authorization failures, and errors at the top of functions. Place the successful execution path (the "happy path") last.
+- Avoid nested `if/else` statements.
+- Every API endpoint or heavy async block must have clear, structured error catching. Map backend errors to standardized HTTP status codes (400 for bad input, 401 unauthenticated, 403 unauthorized, 404 missing, 500 server breakdown).
+
+# ============================================================================
+# CURSOR BOT BEHAVIOR PREFERENCES
+# ============================================================================
+- Be highly concise. Do not explain basic programming concepts or lecture on why code works unless explicitly asked.
+- Output complete, production-ready files when suggesting code blocks. Avoid leaving placeholders like `// TODO: implement later` or missing code segments inside generated snippets.
+- If a proposed fix requires breaking changes or updates to internal dependencies, alert the user before generating the block.
