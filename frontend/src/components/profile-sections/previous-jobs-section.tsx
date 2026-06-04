@@ -205,7 +205,7 @@ export function PreviousJobsSection({
           </div>
         </div>
         <div className="field">
-          <label>
+          <label className="field-checkbox">
             <input
               type="checkbox"
               checked={draft.isCurrent}
@@ -213,7 +213,7 @@ export function PreviousJobsSection({
               onChange={(e) =>
                 setDraft((prev) => ({ ...prev, isCurrent: e.target.checked }))
               }
-            />{" "}
+            />
             I currently work here
           </label>
         </div>

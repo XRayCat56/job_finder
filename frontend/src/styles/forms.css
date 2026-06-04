@@ -121,6 +121,18 @@
   width: auto;
 }
 
+.field label.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.field label.field-checkbox input {
+  width: auto;
+}
+
 .hint {
   color: #888;
   font-size: 0.85rem;
