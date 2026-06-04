@@ -1,0 +1,60 @@
+.personal-info-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.personal-info-page__header {
+  margin-bottom: 2rem;
+}
+
+.personal-info-page__back {
+  display: inline-block;
+  color: #4ade80;
+  text-decoration: none;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.personal-info-page__header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 2rem;
+}
+
+.personal-info-page__header p {
+  margin: 0;
+  color: #888;
+}
+
+.personal-info-page__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.personal-info-page__status {
+  color: #888;
+}
+
+.personal-info-page__status--error {
+  color: #f87171;
+}
+
+.personal-info-page__submit {
+  margin-top: 0.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #2a2a2a;
+}
+
+.personal-info-page__submit-notice {
+  margin: 0 0 1rem;
+  color: #4ade80;
+}
+
+.personal-info-page__submit-notice--error {
+  color: #f87171;
+}
+
+.personal-info-page__submit-btn {
+  width: 100%;
+}

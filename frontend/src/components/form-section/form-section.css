@@ -1,0 +1,29 @@
+.form-section {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.form-section__header h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+
+.form-section__header p {
+  margin: 0 0 1rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.form-section__notice {
+  color: #4ade80;
+  font-size: 0.875rem;
+  margin: 0 0 1rem;
+}
+
+.form-section__error {
+  color: #f87171;
+  font-size: 0.875rem;
+  margin: 0 0 1rem;
+}
