@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { createSkill, deleteSkill, updateSkill } from "../../api/profile";
 import {
   PROFICIENCY_LEVELS,
@@ -29,6 +29,7 @@ export function SkillsSection({
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const skillNameRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -46,6 +47,11 @@ export function SkillsSection({
       } else {
         await createSkill(draft);
         setNotice("Skill added.");
+        setDraft(EMPTY);
+        setEditingId(null);
+        await onChanged();
+        skillNameRef.current?.focus();
+        return;
       }
       setDraft(EMPTY);
       setEditingId(null);
@@ -126,6 +132,7 @@ export function SkillsSection({
         <div className="field">
           <label htmlFor="skillName">Skill name</label>
           <input
+            ref={skillNameRef}
             id="skillName"
             required
             disabled={!hasUser}
