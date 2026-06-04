@@ -174,6 +174,7 @@ export function ProjectsSection({
           <textarea
             id="projectDescription"
             disabled={!hasUser}
+            rows={8}
             value={draft.description}
             onChange={(e) =>
               setDraft((prev) => ({ ...prev, description: e.target.value }))
