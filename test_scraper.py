@@ -40,5 +40,5 @@ def scrape_website(url):
 if __name__ == "__main__":
     # Replace this with the target URL you want to scrape
     # (Make sure the site allows scraping!)
-    target_url = "https://www.linkedin.com/jobs/view/4423917852/"
+    target_url = "https://www.linkedin.com/jobs/view/4398500921/"
     scrape_website(target_url)
