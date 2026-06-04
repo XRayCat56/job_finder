@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { prisma } from "./db.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3002;
@@ -14,6 +15,25 @@ app.get("/api/hello", (_req, res) => {
   });
 });
 
+app.get("/api/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", database: "connected" });
+  } catch {
+    res.status(503).json({ status: "error", database: "disconnected" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+});
+
+process.on("SIGINT", async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  await prisma.$disconnect();
+  process.exit(0);
 });

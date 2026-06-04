@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserInfo {
+  id       Int    @id @default(autoincrement())
+  fullName String @map("full_name")
+  email    String @unique
+  phone    String?
+
+  skills           Skill[]
+  projects         Project[]
+  jobApplications  JobApplication[]
+  resumes          Resume[]
+  education        Education[]
+  previousJobs     PreviousJob[]
+
+  @@map("user_info")
+}
+
+model Skill {
+  id                Int    @id @default(autoincrement())
+  skillName         String @map("skill_name")
+  proficiencyLevel  String @map("proficiency_level")
+  userId            Int    @map("user_id")
+
+  user     UserInfo       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects ProjectSkill[]
+
+  @@map("skills")
+}
+
+model PreviousJob {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @map("user_id")
+  companyName String  @map("company_name")
+  jobTitle    String  @map("job_title")
+  startMonth  Int     @map("start_month")
+  startYear   Int     @map("start_year")
+  endMonth    Int?    @map("end_month")
+  endYear     Int?    @map("end_year")
+
+  user     UserInfo  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@map("previous_jobs")
+}
+
+model Project {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  jobId       Int?    @map("job_id")
+  userId      Int     @map("user_id")
+
+  previousJob PreviousJob?   @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  user        UserInfo       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills      ProjectSkill[]
+
+  @@map("projects")
+}
+
+// Many-to-many: projects <-> skills (skills_used)
+model ProjectSkill {
+  projectId Int @map("project_id")
+  skillId   Int @map("skill_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, skillId])
+  @@map("project_skills")
+}
+
+model JobApplication {
+  id          Int      @id @default(autoincrement())
+  title       String
+  link        String
+  appliedDate DateTime @map("applied_date") @db.Date
+  userId      Int      @map("user_id")
+
+  user    UserInfo @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumes Resume[]
+
+  @@map("job_applications")
+}
+
+model Resume {
+  id         Int      @id @default(autoincrement())
+  docContent String   @map("doc_content") @db.Text
+  jobId      Int      @map("job_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  userId     Int      @map("user_id")
+
+  jobApplication JobApplication @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user           UserInfo       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("resumes")
+}
+
+model Education {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  school      String
+  degreeType  String   @map("degree_type")
+  areaOfStudy String   @map("area_of_study")
+  gpa         Decimal? @db.Decimal(3, 2)
+
+  user UserInfo @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("education")
+}
