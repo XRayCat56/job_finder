@@ -2,6 +2,7 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import { prisma } from "./db.js";
+import { jobApplicationsRouter } from "./routes/jobApplications.js";
 import { profileRouter } from "./routes/profile.js";
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/profile", profileRouter);
+app.use("/api/job-applications", jobApplicationsRouter);
 
 app.get("/api/hello", (_req, res) => {
   res.json({
