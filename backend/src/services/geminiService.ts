@@ -1,5 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { GeminiGenerateBody } from "../schemas/gemini.js";
+
+export interface GeminiGenerateInput {
+  text: string;
+  systemInstruction?: string;
+}
 
 export class GeminiServiceError extends Error {
   constructor(
@@ -24,7 +28,7 @@ function getClient(): GoogleGenerativeAI {
 }
 
 export async function generateResponse(
-  input: GeminiGenerateBody,
+  input: GeminiGenerateInput,
 ): Promise<{ text: string }> {
   const client = getClient();
   const model = client.getGenerativeModel({

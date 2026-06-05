@@ -2,7 +2,6 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import { prisma } from "./db.js";
-import { geminiRouter } from "./routes/gemini.js";
 import { profileRouter } from "./routes/profile.js";
 
 const app = express();
@@ -12,7 +11,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/profile", profileRouter);
-app.use("/api/gemini", geminiRouter);
 
 app.get("/api/hello", (_req, res) => {
   res.json({
