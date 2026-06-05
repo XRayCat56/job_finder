@@ -1,0 +1,3 @@
+# Local scraper script and its output (not for version control)
+test_scraper.py
+linkedin_jobs*.html
