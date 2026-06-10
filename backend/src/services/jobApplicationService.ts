@@ -4,6 +4,11 @@ import {
   LinkedInScraperError,
   scrapeLinkedInJob,
 } from "./linkedinScraperService.js";
+import {
+  exportResumeContent,
+  getResumeContentType,
+  type ResumeDownloadFormat,
+} from "./resumeExportService.js";
 
 export class JobApplicationServiceError extends Error {
   constructor(
@@ -205,9 +210,16 @@ export async function createJobApplicationFromUrl(
   };
 }
 
+export interface ResumeDownloadResult {
+  filename: string;
+  content: Buffer | string;
+  contentType: string;
+}
+
 export async function getResumeDownload(
   resumeId: number,
-): Promise<{ filename: string; content: string }> {
+  format: ResumeDownloadFormat,
+): Promise<ResumeDownloadResult> {
   const userId = await requireUserId();
 
   const resume = await prisma.resume.findFirst({
@@ -226,8 +238,11 @@ export async function getResumeDownload(
     .replace(/^-|-$/g, "")
     .toLowerCase();
 
+  const baseName = `${safeTitle || "resume"}-resume`;
+
   return {
-    filename: `${safeTitle || "resume"}-resume.txt`,
-    content: resume.docContent,
+    filename: `${baseName}.${format}`,
+    content: await exportResumeContent(resume.docContent, format),
+    contentType: getResumeContentType(format),
   };
 }

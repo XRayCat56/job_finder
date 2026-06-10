@@ -10,6 +10,10 @@ import {
   getResumeDownload,
 } from "../services/jobApplicationService.js";
 import { LinkedInScraperError } from "../services/linkedinScraperService.js";
+import {
+  RESUME_DOWNLOAD_FORMAT,
+  isResumeDownloadFormat,
+} from "../services/resumeExportService.js";
 
 export const jobApplicationsRouter = Router();
 
@@ -60,9 +64,14 @@ jobApplicationsRouter.get("/resumes/:id/download", async (req, res) => {
     return;
   }
 
+  const formatParam = req.query.format;
+  const format = isResumeDownloadFormat(formatParam)
+    ? formatParam
+    : RESUME_DOWNLOAD_FORMAT.DOCX;
+
   try {
-    const download = await getResumeDownload(resumeId);
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    const download = await getResumeDownload(resumeId, format);
+    res.setHeader("Content-Type", download.contentType);
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${download.filename}"`,

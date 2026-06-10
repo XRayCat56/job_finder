@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getResumeDownloadUrl,
+  RESUME_DOWNLOAD_FORMAT,
   submitJobApplication,
 } from "../../api/job-applications";
 import type { CreateJobApplicationResult } from "../../types/job-application";
@@ -88,7 +89,7 @@ export function ApplyPage() {
             type="submit"
             disabled={submitting}
           >
-            {submitting ? "Processing…" : "Submit application"}
+            {submitting ? "Processing…" : "Generate Resume"}
           </button>
         </div>
       </form>
@@ -118,13 +119,31 @@ export function ApplyPage() {
               </dd>
             </div>
           </dl>
-          <a
-            className="apply-page__download"
-            href={getResumeDownloadUrl(result.resume.id)}
-            download
-          >
-            Download tailored resume
-          </a>
+          <div className="apply-page__downloads">
+            <p className="apply-page__downloads-label">Download tailored resume</p>
+            <div className="apply-page__download-actions">
+              <a
+                className="apply-page__download"
+                href={getResumeDownloadUrl(
+                  result.resume.id,
+                  RESUME_DOWNLOAD_FORMAT.DOCX,
+                )}
+                download
+              >
+                Download .docx
+              </a>
+              <a
+                className="apply-page__download"
+                href={getResumeDownloadUrl(
+                  result.resume.id,
+                  RESUME_DOWNLOAD_FORMAT.PDF,
+                )}
+                download
+              >
+                Download .pdf
+              </a>
+            </div>
+          </div>
         </section>
       ) : null}
     </main>

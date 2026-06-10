@@ -24,6 +24,18 @@ export async function submitJobApplication(
   return parseJsonResponse<CreateJobApplicationResult>(response);
 }
 
-export function getResumeDownloadUrl(resumeId: number): string {
-  return `/api/job-applications/resumes/${resumeId}/download`;
+export const RESUME_DOWNLOAD_FORMAT = {
+  DOCX: "docx",
+  PDF: "pdf",
+} as const;
+
+export type ResumeDownloadFormat =
+  (typeof RESUME_DOWNLOAD_FORMAT)[keyof typeof RESUME_DOWNLOAD_FORMAT];
+
+export function getResumeDownloadUrl(
+  resumeId: number,
+  format: ResumeDownloadFormat,
+): string {
+  const params = new URLSearchParams({ format });
+  return `/api/job-applications/resumes/${resumeId}/download?${params.toString()}`;
 }

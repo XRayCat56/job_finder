@@ -76,6 +76,18 @@
   color: #4ade80;
 }
 
+.apply-page__downloads-label {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.apply-page__download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .apply-page__download {
   display: inline-block;
   background: #4ade80;
