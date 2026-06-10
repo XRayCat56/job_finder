@@ -1,6 +1,14 @@
+import { appendFile, mkdir } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
+const LOG_DIR = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../logs",
+);
+const LOG_FILE = path.join(LOG_DIR, "gemini.log");
 const MAX_RETRIES = 2;
 
 export interface GeminiGenerateInput {
@@ -70,6 +78,24 @@ function parseRetryDelayMs(message: string): number | null {
   return Math.ceil(seconds * 1000);
 }
 
+interface GeminiLogEntry {
+  timestamp: string;
+  model: string;
+  status: "success" | "error";
+  inputLength: number;
+  output?: string;
+  error?: string;
+}
+
+async function writeGeminiLog(entry: GeminiLogEntry): Promise<void> {
+  try {
+    await mkdir(LOG_DIR, { recursive: true });
+    await appendFile(LOG_FILE, `${JSON.stringify(entry)}\n`, "utf8");
+  } catch {
+    // Logging must not affect API behavior.
+  }
+}
+
 function buildQuotaErrorMessage(message: string, model: string): string {
   if (isZeroQuotaError(message)) {
     return `Gemini free-tier quota is unavailable for model "${model}". Link a billing account in Google AI Studio to activate free-tier limits, or set GEMINI_MODEL to a supported model such as gemini-2.5-flash-lite.`;
@@ -103,8 +129,24 @@ export async function generateResponse(
       const text = result.response.text();
 
       if (!text) {
-        throw new GeminiServiceError("Gemini returned an empty response.", 502);
+        const errorMessage = "Gemini returned an empty response.";
+        void writeGeminiLog({
+          timestamp: new Date().toISOString(),
+          model: modelName,
+          status: "error",
+          inputLength: input.text.length,
+          error: errorMessage,
+        });
+        throw new GeminiServiceError(errorMessage, 502);
       }
+
+      void writeGeminiLog({
+        timestamp: new Date().toISOString(),
+        model: modelName,
+        status: "success",
+        inputLength: input.text.length,
+        output: text,
+      });
 
       return { text };
     } catch (error) {
@@ -116,10 +158,15 @@ export async function generateResponse(
 
       if (isQuotaError(lastMessage)) {
         if (isZeroQuotaError(lastMessage)) {
-          throw new GeminiServiceError(
-            buildQuotaErrorMessage(lastMessage, modelName),
-            429,
-          );
+          const errorMessage = buildQuotaErrorMessage(lastMessage, modelName);
+          void writeGeminiLog({
+            timestamp: new Date().toISOString(),
+            model: modelName,
+            status: "error",
+            inputLength: input.text.length,
+            error: errorMessage,
+          });
+          throw new GeminiServiceError(errorMessage, 429);
         }
 
         if (attempt < MAX_RETRIES) {
@@ -129,21 +176,36 @@ export async function generateResponse(
           continue;
         }
 
-        throw new GeminiServiceError(
-          buildQuotaErrorMessage(lastMessage, modelName),
-          429,
-        );
+        const errorMessage = buildQuotaErrorMessage(lastMessage, modelName);
+        void writeGeminiLog({
+          timestamp: new Date().toISOString(),
+          model: modelName,
+          status: "error",
+          inputLength: input.text.length,
+          error: errorMessage,
+        });
+        throw new GeminiServiceError(errorMessage, 429);
       }
 
-      throw new GeminiServiceError(
-        `Gemini request failed: ${lastMessage}`,
-        502,
-      );
+      const errorMessage = `Gemini request failed: ${lastMessage}`;
+      void writeGeminiLog({
+        timestamp: new Date().toISOString(),
+        model: modelName,
+        status: "error",
+        inputLength: input.text.length,
+        error: errorMessage,
+      });
+      throw new GeminiServiceError(errorMessage, 502);
     }
   }
 
-  throw new GeminiServiceError(
-    `Gemini request failed: ${lastMessage}`,
-    502,
-  );
+  const errorMessage = `Gemini request failed: ${lastMessage}`;
+  void writeGeminiLog({
+    timestamp: new Date().toISOString(),
+    model: modelName,
+    status: "error",
+    inputLength: input.text.length,
+    error: errorMessage,
+  });
+  throw new GeminiServiceError(errorMessage, 502);
 }

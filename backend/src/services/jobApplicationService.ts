@@ -118,7 +118,7 @@ async function buildResumePrompt(
           .join("\n")
       : "No projects on file.";
 
-  return `Create a tailored resume for the job posting below.
+  return `Write me a tailored resume to the job description here using the projects and skill provided.
 
 Candidate:
 - Name: ${user.fullName}
