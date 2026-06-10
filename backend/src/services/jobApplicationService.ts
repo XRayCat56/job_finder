@@ -100,27 +100,27 @@ async function buildResumePrompt(
   const skillsSection =
     user.skills.length > 0
       ? user.skills
-          .map(
-            (skill) =>
-              `- ${skill.skillName} (${skill.proficiencyLevel})`,
-          )
-          .join("\n")
+        .map(
+          (skill) =>
+            `- ${skill.skillName} (${skill.proficiencyLevel})`,
+        )
+        .join("\n")
       : "No skills on file.";
 
   const projectsSection =
     user.projects.length > 0
       ? user.projects
-          .map((project) => {
-            const projectSkills = project.skills
-              .map((link) => link.skill.skillName)
-              .join(", ");
-            const skillsSuffix = projectSkills
-              ? ` | Skills used: ${projectSkills}`
-              : "";
-            const description = project.description?.trim() ?? "No description";
-            return `- ${project.name}: ${description}${skillsSuffix}`;
-          })
-          .join("\n")
+        .map((project) => {
+          const projectSkills = project.skills
+            .map((link) => link.skill.skillName)
+            .join(", ");
+          const skillsSuffix = projectSkills
+            ? ` | Skills used: ${projectSkills}`
+            : "";
+          const description = project.description?.trim() ?? "No description";
+          return `- ${project.name}: ${description}${skillsSuffix}`;
+        })
+        .join("\n")
       : "No projects on file.";
 
   return `Create a tailored resume for the job posting below.
@@ -178,7 +178,8 @@ export async function createJobApplicationFromUrl(
     const { text: resumeContent } = await generateResponse({
       text: prompt,
       systemInstruction:
-        "You are an expert resume writer. Produce polished, job-tailored resumes using only the candidate information provided.",
+        "You are an expert resume writer. Produce polished, job-tailored resumes using only the candidate information provided." +
+        "The resume download format will be either .docx or .pdf. Format the resume accordingly.",
     });
 
     resume = await prisma.resume.create({
